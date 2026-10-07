@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scientific Calculator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;font-family:Arial,sans-serif;background:#080b13;color:#fff}
+.calculator{width:min(440px,100%);padding:18px;border-radius:30px;background:linear-gradient(145deg,#202638,#0c101b);box-shadow:18px 18px 35px #03050a,-10px -10px 25px #293248, inset 1px 1px 0 rgba(255,255,255,.12);animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-5px) rotateX(1deg)}}
+.display{min-height:145px;padding:20px 15px;border-radius:22px;background:#090d15;box-shadow:inset 8px 8px 18px #03050a,inset -5px -5px 14px #1b2332,0 5px 0 #05070c;display:flex;flex-direction:column;justify-content:flex-end}
+.expression{font-size:30px;text-align:right;overflow-x:auto;white-space:nowrap;min-height:38px}
+.result{text-align:right;color:#9da8bb;font-size:19px;margin-top:8px;min-height:26px}
+.science,.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:13px}
+button{min-height:56px;border:0;border-radius:17px;color:#fff;background:linear-gradient(145deg,#252d3e,#101622);box-shadow:5px 5px 9px #05070c,-3px -3px 7px #30394c,inset 1px 1px 0 rgba(255,255,255,.08);font-size:18px;font-weight:700;cursor:pointer;transition:transform .1s,box-shadow .1s}
+button:active{transform:translateY(5px);box-shadow:2px 2px 4px #05070c,-1px -1px 3px #30394c}
+.science button{min-height:45px;font-size:14px}
+.op{color:#76dcff}
+.equal{grid-column:span 2;background:linear-gradient(145deg,#1f9fc2,#17627c)}
+.error{color:#ff9ca8;text-align:center;margin-top:12px}
+@media(max-width:360px){button{min-height:50px}.calculator{padding:13px}}
+</style>
+</head>
+<body>
+<main class="calculator">
+<div class="display">
+<div class="expression">{{ expression or "0" }}</div>
+<div class="result">{% if result is not none %}= {{ result }}{% endif %}</div>
+</div>
+
+<form method="POST" id="form">
+<input type="hidden" name="expression" id="expression">
+<div class="science">
+<button type="button" data-v="sin(">sin</button>
+<button type="button" data-v="cos(">cos</button>
+<button type="button" data-v="tan(">tan</button>
+<button type="button" data-v="log(">log</button>
+<button type="button" data-v="sqrt(">√</button>
+<button type="button" data-v="//">//</button>
+<button type="button" data-v="(">(</button>
+<button type="button" data-v=")">)</button>
+</div>
+
+<div class="keys">
+<button type="button" class="op" data-action="clear">C</button>
+<button type="button" class="op" data-action="back">⌫</button>
+<button type="button" class="op" data-v="%">%</button>
+<button type="button" class="op" data-v="/">÷</button>
+
+<button type="button" data-v="7">7</button><button type="button" data-v="8">8</button><button type="button" data-v="9">9</button><button type="button" class="op" data-v="*">×</button>
+<button type="button" data-v="4">4</button><button type="button" data-v="5">5</button><button type="button" data-v="6">6</button><button type="button" class="op" data-v="-">−</button>
+<button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" class="op" data-v="+">+</button>
+<button type="button" data-v="0">0</button><button type="button" data-v=".">.</button><button type="button" data-v="(">(</button><button type="button" data-v=")">)</button>
+<button type="button" class="equal" data-action="equals">=</button><button type="button" class="op" data-v="//">Floor ÷</button>
+</div>
+</form>
+
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+<script>
+const form=document.getElementById("form");
+const field=document.getElementById("expression");
+let expression={{ expression|tojson }};
+
+function update(){field.value=expression;document.querySelector(".expression").textContent=expression||"0"}
+
+document.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",()=>{expression+=b.dataset.v;update()}));
+document.querySelector("[data-action=clear]").addEventListener("click",()=>{expression="";update()});
+document.querySelector("[data-action=back]").addEventListener("click",()=>{expression=expression.slice(0,-1);update()});
+document.querySelector("[data-action=equals]").addEventListener("click",()=>{field.value=expression;form.submit()});
+document.addEventListener("keydown",e=>{
+if(["INPUT","TEXTAREA"].includes(e.target.tagName))return;
+if(/[0-9.+\-*/%()]/.test(e.key)){expression+=e.key;update()}
+else if(e.key==="Enter"){field.value=expression;form.submit()}
+else if(e.key==="Backspace"){expression=expression.slice(0,-1);update()}
+else if(e.key==="Escape"){expression="";update()}
+});
+update();
+</script>
+</main>
+</body>
+</html>
